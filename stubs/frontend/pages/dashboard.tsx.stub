@@ -1,0 +1,63 @@
+import { Head, Link } from '@inertiajs/react';
+
+interface Enrollment {
+    id: number;
+    progress: number;
+    status: string | null;
+    course: {
+        slug: string | null;
+        title: string | null;
+        thumbnail: string | null;
+        instructor: string | null;
+    };
+}
+
+interface Props {
+    enrollments: Enrollment[];
+}
+
+export default function Dashboard({ enrollments }: Props) {
+    return (
+        <div className="mx-auto max-w-5xl px-4 py-10">
+            <Head title="My courses" />
+
+            <h1 className="mb-8 text-3xl font-bold text-gray-900">My courses</h1>
+
+            {enrollments.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-gray-300 p-10 text-center text-gray-500">
+                    You have not enrolled in any courses yet.
+                    <Link href="/courses" className="ml-1 text-indigo-600 hover:underline">
+                        Browse courses
+                    </Link>
+                </div>
+            ) : (
+                <div className="space-y-4">
+                    {enrollments.map((enrollment) => (
+                        <Link
+                            key={enrollment.id}
+                            href={enrollment.course.slug ? `/courses/${enrollment.course.slug}` : '#'}
+                            className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md"
+                        >
+                            <div className="h-16 w-28 shrink-0 overflow-hidden rounded-lg bg-gray-100">
+                                {enrollment.course.thumbnail ? (
+                                    <img src={enrollment.course.thumbnail} alt="" className="h-full w-full object-cover" />
+                                ) : null}
+                            </div>
+                            <div className="flex-1">
+                                <h2 className="font-semibold text-gray-900">{enrollment.course.title}</h2>
+                                <p className="text-sm text-gray-500">{enrollment.course.instructor ?? 'Staff'}</p>
+                                <div className="mt-2 h-2 w-full rounded-full bg-gray-100">
+                                    <div className="h-2 rounded-full bg-indigo-600" style={{ width: `${enrollment.progress}%` }} />
+                                </div>
+                            </div>
+                            <div className="text-right text-sm">
+                                <div className="font-semibold text-gray-900">{enrollment.progress}%</div>
+                                <div className="text-gray-400">{enrollment.status}</div>
+                            </div>
+                        </Link>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}

@@ -1,0 +1,67 @@
+import { Head, useForm } from '@inertiajs/react';
+import type { FormEvent } from 'react';
+
+interface Course {
+    slug: string;
+    title: string;
+    is_free: boolean;
+    effective_price: number;
+    currency: string;
+}
+
+interface Props {
+    course: Course;
+}
+
+export default function Checkout({ course }: Props) {
+    const form = useForm({ coupon: '' });
+
+    const submit = (event: FormEvent) => {
+        event.preventDefault();
+        form.post(`/courses/${course.slug}/checkout`);
+    };
+
+    return (
+        <div className="mx-auto max-w-md px-4 py-12">
+            <Head title={`Checkout · ${course.title}`} />
+
+            <h1 className="text-2xl font-bold text-gray-900">Checkout</h1>
+
+            <div className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+                <div className="flex items-center justify-between">
+                    <span className="font-medium text-gray-800">{course.title}</span>
+                    <span className="font-semibold text-gray-900">
+                        {course.is_free ? 'Free' : `${course.currency} ${course.effective_price.toFixed(2)}`}
+                    </span>
+                </div>
+
+                <form onSubmit={submit} className="mt-6 space-y-4">
+                    {!course.is_free ? (
+                        <div>
+                            <label htmlFor="coupon" className="mb-1 block text-sm font-medium text-gray-700">
+                                Coupon code
+                            </label>
+                            <input
+                                id="coupon"
+                                type="text"
+                                value={form.data.coupon}
+                                onChange={(event) => form.setData('coupon', event.target.value)}
+                                className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                                placeholder="Optional"
+                            />
+                            {form.errors.coupon ? <p className="mt-1 text-xs text-red-600">{form.errors.coupon}</p> : null}
+                        </div>
+                    ) : null}
+
+                    <button
+                        type="submit"
+                        disabled={form.processing}
+                        className="w-full rounded-lg bg-indigo-600 px-4 py-2 font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-60"
+                    >
+                        {course.is_free ? 'Enroll now' : 'Complete purchase'}
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+}

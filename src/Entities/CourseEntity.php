@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CmsOrbit\Lms\Entities;
 
 use CmsOrbit\Core\Foundation\Entity\Entity;
+use CmsOrbit\Core\Screen\Fields\CheckBox;
 use CmsOrbit\Core\Screen\Fields\DateTimer;
 use CmsOrbit\Core\Screen\Fields\Input;
 use CmsOrbit\Core\Screen\Fields\RichText;
@@ -85,6 +86,13 @@ class CourseEntity extends Entity
             Select::make('status')->title(__('Status'))
                 ->options(CourseStatus::options())
                 ->value(CourseStatus::Draft->value),
+            CheckBox::make('is_free')->title(__('Free course'))->sendTrueOrFalse()->value(true),
+            Input::make('price')->title(__('Price'))->type('number')->value(0),
+            Input::make('sale_price')->title(__('Sale price'))->type('number')
+                ->help(__('Optional discounted price.')),
+            Input::make('currency')->title(__('Currency'))->value('USD'),
+            Input::make('commission_rate')->title(__('Instructor commission (%)'))->type('number')
+                ->help(__('Leave blank to use the marketplace default.')),
             Input::make('category')->title(__('Category')),
             Input::make('duration_minutes')->title(__('Duration (minutes)'))->type('number'),
             Input::make('max_students')->title(__('Max students'))->type('number')

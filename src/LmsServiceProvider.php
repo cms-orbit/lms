@@ -10,12 +10,21 @@ use CmsOrbit\Core\Foundation\ItemPermission;
 use CmsOrbit\Core\Foundation\OrbitServiceProvider;
 use CmsOrbit\Core\Support\Facades\Orbit;
 use CmsOrbit\Core\Support\Locale;
+use CmsOrbit\Lms\Console\InstallFrontendCommand;
+use CmsOrbit\Lms\Entities\AssignmentEntity;
+use CmsOrbit\Lms\Entities\CertificateEntity;
+use CmsOrbit\Lms\Entities\CouponEntity;
 use CmsOrbit\Lms\Entities\CourseEntity;
+use CmsOrbit\Lms\Entities\CourseQuestionEntity;
 use CmsOrbit\Lms\Entities\CourseSectionEntity;
+use CmsOrbit\Lms\Entities\EarningEntity;
 use CmsOrbit\Lms\Entities\EnrollmentEntity;
 use CmsOrbit\Lms\Entities\LessonEntity;
+use CmsOrbit\Lms\Entities\OrderEntity;
+use CmsOrbit\Lms\Entities\PayoutEntity;
 use CmsOrbit\Lms\Entities\QuizEntity;
 use CmsOrbit\Lms\Entities\QuizQuestionEntity;
+use CmsOrbit\Lms\Entities\ReviewEntity;
 
 /**
  * Registers the LMS domain with Orbit: entity descriptors (menu / permissions /
@@ -34,11 +43,27 @@ class LmsServiceProvider extends OrbitServiceProvider
         QuizEntity::class,
         QuizQuestionEntity::class,
         EnrollmentEntity::class,
+        // Marketplace (Phase 2)
+        OrderEntity::class,
+        CouponEntity::class,
+        EarningEntity::class,
+        PayoutEntity::class,
+        // Engagement (Phase 3)
+        ReviewEntity::class,
+        CourseQuestionEntity::class,
+        AssignmentEntity::class,
+        CertificateEntity::class,
     ];
 
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__.'/../config/lms.php', 'lms');
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                InstallFrontendCommand::class,
+            ]);
+        }
 
         // Register entities as soon as Core's EntityRegistry resolves. Core loads
         // entity CRUD routes during its own boot(), which may run before this
@@ -58,6 +83,8 @@ class LmsServiceProvider extends OrbitServiceProvider
     public function boot(): void
     {
         Orbit::registerSection('lms', 'bs.mortarboard', __('Learning'), 5300);
+        Orbit::registerSection('lms-marketplace', 'bs.shop', __('Marketplace'), 5400);
+        Orbit::registerSection('lms-engagement', 'bs.chat-square-heart', __('Engagement'), 5500);
 
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 

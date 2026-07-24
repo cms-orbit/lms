@@ -33,6 +33,11 @@ class Course extends Model
         'instructor_id',
         'level',
         'status',
+        'is_free',
+        'price',
+        'sale_price',
+        'currency',
+        'commission_rate',
         'category',
         'duration_minutes',
         'max_students',
@@ -46,10 +51,51 @@ class Course extends Model
         return [
             'level' => CourseLevel::class,
             'status' => CourseStatus::class,
+            'is_free' => 'boolean',
+            'price' => 'decimal:2',
+            'sale_price' => 'decimal:2',
+            'commission_rate' => 'integer',
             'duration_minutes' => 'integer',
             'max_students' => 'integer',
             'published_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Price actually charged: the sale price when set, otherwise the list price.
+     * Free courses always resolve to 0.
+     */
+    public function effectivePrice(): float
+    {
+        if ($this->is_free) {
+            return 0.0;
+        }
+
+        $sale = $this->sale_price !== null ? (float) $this->sale_price : null;
+
+        if ($sale !== null && $sale > 0 && $sale < (float) $this->price) {
+            return $sale;
+        }
+
+        return (float) $this->price;
+    }
+
+    public function isPurchasable(): bool
+    {
+        return ! $this->is_free && $this->effectivePrice() > 0;
+    }
+
+    /**
+     * Instructor commission percentage for this course, falling back to the
+     * marketplace default when the course does not override it.
+     */
+    public function commissionRate(): int
+    {
+        if ($this->commission_rate !== null) {
+            return (int) $this->commission_rate;
+        }
+
+        return (int) config('lms.marketplace.commission_rate', 80);
     }
 
     protected static function booted(): void
@@ -89,6 +135,39 @@ class Course extends Model
     public function enrollments(): HasMany
     {
         return $this->hasMany(Enrollment::class);
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    public function questions(): HasMany
+    {
+        return $this->hasMany(CourseQuestion::class);
+    }
+
+    public function assignments(): HasMany
+    {
+        return $this->hasMany(Assignment::class)->orderBy('order');
+    }
+
+    public function certificates(): HasMany
+    {
+        return $this->hasMany(Certificate::class);
+    }
+
+    /**
+     * Average approved review rating, rounded to one decimal place.
+     */
+    public function averageRating(): float
+    {
+        return round((float) $this->reviews()->approved()->avg('rating'), 1);
+    }
+
+    public function reviewsCount(): int
+    {
+        return $this->reviews()->approved()->count();
     }
 
     /**

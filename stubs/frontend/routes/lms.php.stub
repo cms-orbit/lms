@@ -1,0 +1,26 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Http\Controllers\Lms\CatalogController;
+use App\Http\Controllers\Lms\CheckoutController;
+use App\Http\Controllers\Lms\DashboardController;
+use App\Http\Controllers\Lms\LearnController;
+use Illuminate\Support\Facades\Route;
+
+/*
+| CMS Orbit LMS storefront routes (published scaffolding — edit freely).
+*/
+
+Route::get('/courses', [CatalogController::class, 'index'])->name('lms.courses.index');
+Route::get('/courses/{course:slug}', [CatalogController::class, 'show'])->name('lms.courses.show');
+
+Route::middleware('auth')->group(function (): void {
+    Route::get('/courses/{course:slug}/checkout', [CheckoutController::class, 'show'])->name('lms.checkout');
+    Route::post('/courses/{course:slug}/checkout', [CheckoutController::class, 'store'])->name('lms.checkout.store');
+
+    Route::get('/learn/{course:slug}/{lesson}', [LearnController::class, 'show'])->name('lms.learn');
+    Route::post('/learn/lesson/{lesson}/complete', [LearnController::class, 'complete'])->name('lms.learn.complete');
+
+    Route::get('/my-courses', [DashboardController::class, 'index'])->name('lms.dashboard');
+});

@@ -2,6 +2,25 @@
 
 이 문서는 `cms-orbit/lms`의 릴리스 노트를 기록합니다.
 
+## 4.1.0 - 2026-07-24
+
+### 추가 (Phase 2 — 오픈마켓형 수익화)
+
+- 코스 가격 필드(`is_free`, `price`, `sale_price`, `currency`, `commission_rate`)를 `lms_courses`에 추가.
+- 마켓플레이스 모델: `Coupon`, `Order`, `OrderItem`, `Earning`, `Payout` + 마이그레이션/팩토리/열거형(`OrderStatus`, `CouponType`, `EarningStatus`, `PayoutStatus`).
+- `CheckoutService` — 주문 생성 → 강사/플랫폼 수익 분배(커미션) → 결제 시 수강 등록. 무료 코스 즉시 등록, 쿠폰 할인, 환불(수익 회수·수강 취소) 지원.
+- 관리자 엔티티: Orders / Coupons / Earnings / Payouts (`Marketplace` 섹션). 커미션 기본값은 `lms.marketplace.commission_rate`(기본 80%).
+
+### 추가 (Phase 3 — 참여 기능)
+
+- `Review`(별점·승인), `CourseQuestion`/`CourseAnswer`(코스 Q&A), `Assignment`/`AssignmentSubmission`(과제·채점), `Certificate`(수료증, 시리얼 자동 발급).
+- 관리자 엔티티: Reviews / Q&A / Assignments / Certificates (`Engagement` 섹션).
+- `Course::averageRating()` / `reviewsCount()`.
+
+### 추가 (Phase 4 — 공개 프론트엔드 스캐폴딩)
+
+- `php artisan lms:install-frontend` — 코스 카탈로그·상세·강의 플레이어·체크아웃·학생 대시보드 페이지(React/Inertia)와 공개 컨트롤러·라우트를 **호스트로 게시**합니다. 라라벨 스타터킷처럼 게시 후에는 호스트가 소유·자유롭게 수정합니다(`--force`로 덮어쓰기). `routes/lms.php`를 `routes/web.php`에 1회 등록합니다.
+
 ## 4.0.0 - 2026-07-24
 
 ### 추가 (Phase 1 — Core LMS)

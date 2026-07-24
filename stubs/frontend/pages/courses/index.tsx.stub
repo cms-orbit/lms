@@ -1,0 +1,95 @@
+import { Head, Link } from '@inertiajs/react';
+
+interface CourseCard {
+    id: number;
+    slug: string;
+    title: string;
+    subtitle: string | null;
+    thumbnail: string | null;
+    instructor: string | null;
+    level: string | null;
+    is_free: boolean;
+    effective_price: number;
+    currency: string;
+    rating: number;
+    reviews_count: number;
+}
+
+interface PageLink {
+    url: string | null;
+    label: string;
+    active: boolean;
+}
+
+interface Props {
+    courses: {
+        data: CourseCard[];
+        links: PageLink[];
+    };
+}
+
+function price(course: CourseCard): string {
+    if (course.is_free) {
+        return 'Free';
+    }
+
+    return `${course.currency} ${course.effective_price.toFixed(2)}`;
+}
+
+export default function CoursesIndex({ courses }: Props) {
+    return (
+        <div className="mx-auto max-w-6xl px-4 py-10">
+            <Head title="Courses" />
+
+            <h1 className="mb-8 text-3xl font-bold text-gray-900">Explore courses</h1>
+
+            {courses.data.length === 0 ? (
+                <p className="text-gray-500">No courses published yet.</p>
+            ) : (
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {courses.data.map((course) => (
+                        <Link
+                            key={course.id}
+                            href={`/courses/${course.slug}`}
+                            className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md"
+                        >
+                            <div className="aspect-video w-full bg-gray-100">
+                                {course.thumbnail ? (
+                                    <img src={course.thumbnail} alt={course.title} className="h-full w-full object-cover" />
+                                ) : null}
+                            </div>
+                            <div className="p-4">
+                                <h2 className="line-clamp-2 font-semibold text-gray-900 group-hover:text-indigo-600">
+                                    {course.title}
+                                </h2>
+                                {course.subtitle ? (
+                                    <p className="mt-1 line-clamp-2 text-sm text-gray-500">{course.subtitle}</p>
+                                ) : null}
+                                <div className="mt-3 flex items-center justify-between text-sm">
+                                    <span className="text-gray-500">{course.instructor ?? 'Staff'}</span>
+                                    <span className="font-semibold text-gray-900">{price(course)}</span>
+                                </div>
+                                <div className="mt-1 text-xs text-amber-600">
+                                    ★ {course.rating.toFixed(1)} ({course.reviews_count})
+                                </div>
+                            </div>
+                        </Link>
+                    ))}
+                </div>
+            )}
+
+            <div className="mt-8 flex flex-wrap gap-1">
+                {courses.links.map((link, index) => (
+                    <Link
+                        key={index}
+                        href={link.url ?? '#'}
+                        className={`rounded px-3 py-1 text-sm ${
+                            link.active ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-100'
+                        } ${link.url ? '' : 'pointer-events-none opacity-50'}`}
+                        dangerouslySetInnerHTML={{ __html: link.label }}
+                    />
+                ))}
+            </div>
+        </div>
+    );
+}

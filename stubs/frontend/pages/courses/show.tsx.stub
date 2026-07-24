@@ -1,0 +1,137 @@
+import { Head, Link } from '@inertiajs/react';
+
+interface LessonRow {
+    id: number;
+    title: string;
+    is_preview: boolean;
+    type: string | null;
+}
+
+interface QuizRow {
+    id: number;
+    title: string;
+}
+
+interface SectionRow {
+    id: number;
+    title: string;
+    lessons: LessonRow[];
+    quizzes: QuizRow[];
+}
+
+interface ReviewRow {
+    id: number;
+    rating: number;
+    comment: string | null;
+    student: string | null;
+}
+
+interface Course {
+    slug: string;
+    title: string;
+    subtitle: string | null;
+    description: string | null;
+    thumbnail: string | null;
+    instructor: string | null;
+    level: string | null;
+    is_free: boolean;
+    effective_price: number;
+    currency: string;
+    rating: number;
+    reviews_count: number;
+    sections: SectionRow[];
+    reviews: ReviewRow[];
+}
+
+interface Props {
+    course: Course;
+    isEnrolled: boolean;
+}
+
+export default function CourseShow({ course, isEnrolled }: Props) {
+    const cta = isEnrolled
+        ? { href: `/my-courses`, label: 'Go to my courses' }
+        : course.is_free
+          ? { href: `/courses/${course.slug}/checkout`, label: 'Enroll for free' }
+          : { href: `/courses/${course.slug}/checkout`, label: `Buy · ${course.currency} ${course.effective_price.toFixed(2)}` };
+
+    return (
+        <div className="mx-auto max-w-5xl px-4 py-10">
+            <Head title={course.title} />
+
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+                <div className="lg:col-span-2">
+                    <h1 className="text-3xl font-bold text-gray-900">{course.title}</h1>
+                    {course.subtitle ? <p className="mt-2 text-lg text-gray-600">{course.subtitle}</p> : null}
+                    <p className="mt-2 text-sm text-gray-500">
+                        By {course.instructor ?? 'Staff'} · {course.level} · ★ {course.rating.toFixed(1)} ({course.reviews_count})
+                    </p>
+
+                    {course.description ? (
+                        <div className="prose mt-6 max-w-none text-gray-700" dangerouslySetInnerHTML={{ __html: course.description }} />
+                    ) : null}
+
+                    <h2 className="mt-10 text-xl font-semibold text-gray-900">Curriculum</h2>
+                    <div className="mt-4 space-y-4">
+                        {course.sections.map((section) => (
+                            <div key={section.id} className="rounded-lg border border-gray-200">
+                                <div className="border-b border-gray-100 bg-gray-50 px-4 py-2 font-medium text-gray-800">
+                                    {section.title}
+                                </div>
+                                <ul className="divide-y divide-gray-100">
+                                    {section.lessons.map((lesson) => (
+                                        <li key={`l-${lesson.id}`} className="flex items-center justify-between px-4 py-2 text-sm">
+                                            <span className="text-gray-700">▸ {lesson.title}</span>
+                                            {lesson.is_preview ? (
+                                                <Link href={`/learn/${course.slug}/${lesson.id}`} className="text-indigo-600 hover:underline">
+                                                    Preview
+                                                </Link>
+                                            ) : null}
+                                        </li>
+                                    ))}
+                                    {section.quizzes.map((quiz) => (
+                                        <li key={`q-${quiz.id}`} className="px-4 py-2 text-sm text-gray-500">
+                                            ✎ Quiz: {quiz.title}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ))}
+                    </div>
+
+                    <h2 className="mt-10 text-xl font-semibold text-gray-900">Reviews</h2>
+                    <div className="mt-4 space-y-3">
+                        {course.reviews.length === 0 ? (
+                            <p className="text-sm text-gray-500">No reviews yet.</p>
+                        ) : (
+                            course.reviews.map((review) => (
+                                <div key={review.id} className="rounded-lg border border-gray-100 p-3">
+                                    <div className="text-sm text-amber-600">{'★'.repeat(review.rating)}</div>
+                                    <p className="mt-1 text-sm text-gray-700">{review.comment}</p>
+                                    <p className="mt-1 text-xs text-gray-400">— {review.student ?? 'Student'}</p>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+
+                <aside className="lg:col-span-1">
+                    <div className="sticky top-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                        {course.thumbnail ? (
+                            <img src={course.thumbnail} alt={course.title} className="mb-4 aspect-video w-full rounded-lg object-cover" />
+                        ) : null}
+                        <div className="text-2xl font-bold text-gray-900">
+                            {course.is_free ? 'Free' : `${course.currency} ${course.effective_price.toFixed(2)}`}
+                        </div>
+                        <Link
+                            href={cta.href}
+                            className="mt-4 block rounded-lg bg-indigo-600 px-4 py-2 text-center font-semibold text-white transition hover:bg-indigo-700"
+                        >
+                            {cta.label}
+                        </Link>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    );
+}

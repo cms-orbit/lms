@@ -1,0 +1,41 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers\Lms;
+
+use App\Http\Controllers\Controller;
+use CmsOrbit\Lms\Models\Enrollment;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
+
+/**
+ * Student "My courses" dashboard. Published scaffolding — edit freely.
+ */
+class DashboardController extends Controller
+{
+    public function index(Request $request): Response
+    {
+        $enrollments = Enrollment::query()
+            ->where('student_id', $request->user()->getKey())
+            ->with('course.instructor')
+            ->latest()
+            ->get()
+            ->map(fn (Enrollment $enrollment) => [
+                'id' => $enrollment->id,
+                'progress' => $enrollment->progress,
+                'status' => $enrollment->status?->value,
+                'course' => [
+                    'slug' => $enrollment->course?->slug,
+                    'title' => $enrollment->course?->title,
+                    'thumbnail' => $enrollment->course?->thumbnail,
+                    'instructor' => $enrollment->course?->instructor?->name,
+                ],
+            ]);
+
+        return Inertia::render('lms/dashboard', [
+            'enrollments' => $enrollments,
+        ]);
+    }
+}

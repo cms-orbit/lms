@@ -1,0 +1,92 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers\Lms;
+
+use App\Http\Controllers\Controller;
+use CmsOrbit\Lms\Models\Course;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
+
+/**
+ * Public course catalog. Published scaffolding — edit freely.
+ */
+class CatalogController extends Controller
+{
+    public function index(Request $request): Response
+    {
+        $courses = Course::query()
+            ->published()
+            ->with('instructor')
+            ->latest('published_at')
+            ->paginate(12)
+            ->through(fn (Course $course) => $this->summarize($course));
+
+        return Inertia::render('lms/courses/index', [
+            'courses' => $courses,
+        ]);
+    }
+
+    public function show(Request $request, Course $course): Response
+    {
+        abort_unless($course->isPublished(), 404);
+
+        $course->load(['instructor', 'sections.lessons', 'sections.quizzes', 'reviews.student']);
+
+        $user = $request->user();
+        $isEnrolled = $user !== null
+            && $course->enrollments()->where('student_id', $user->getKey())->exists();
+
+        return Inertia::render('lms/courses/show', [
+            'course' => [
+                ...$this->summarize($course),
+                'description' => $course->description,
+                'sections' => $course->sections->map(fn ($section) => [
+                    'id' => $section->id,
+                    'title' => $section->title,
+                    'lessons' => $section->lessons->map(fn ($lesson) => [
+                        'id' => $lesson->id,
+                        'title' => $lesson->title,
+                        'is_preview' => $lesson->is_preview,
+                        'type' => $lesson->type?->value,
+                    ]),
+                    'quizzes' => $section->quizzes->map(fn ($quiz) => [
+                        'id' => $quiz->id,
+                        'title' => $quiz->title,
+                    ]),
+                ]),
+                'reviews' => $course->reviews->where('approved', true)->values()->map(fn ($review) => [
+                    'id' => $review->id,
+                    'rating' => $review->rating,
+                    'comment' => $review->comment,
+                    'student' => $review->student?->name,
+                ]),
+            ],
+            'isEnrolled' => $isEnrolled,
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function summarize(Course $course): array
+    {
+        return [
+            'id' => $course->id,
+            'slug' => $course->slug,
+            'title' => $course->title,
+            'subtitle' => $course->subtitle,
+            'thumbnail' => $course->thumbnail,
+            'instructor' => $course->instructor?->name,
+            'level' => $course->level?->label(),
+            'is_free' => $course->is_free,
+            'price' => $course->is_free ? 0 : (float) $course->price,
+            'effective_price' => $course->effectivePrice(),
+            'currency' => $course->currency,
+            'rating' => $course->averageRating(),
+            'reviews_count' => $course->reviewsCount(),
+        ];
+    }
+}
