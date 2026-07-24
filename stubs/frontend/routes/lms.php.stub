@@ -29,8 +29,6 @@ Route::middleware('auth')->group(function (): void {
     // Instructor
     Route::get('/instructor', [InstructorController::class, 'index'])->name('lms.instructor.dashboard');
 
-    // Certificates + template builder
+    // Certificate view / print (template design lives in the Orbit admin)
     Route::get('/certificates/{certificate}', [CertificateController::class, 'show'])->name('lms.certificate.show');
-    Route::get('/certificate-builder/{template?}', [CertificateController::class, 'builder'])->name('lms.certificate.builder');
-    Route::put('/certificate-builder/{template}', [CertificateController::class, 'save'])->name('lms.certificate.builder.save');
 });

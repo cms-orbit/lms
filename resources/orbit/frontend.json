@@ -1,0 +1,5 @@
+{
+    "alias": "@cms-orbit/lms",
+    "jsPath": "resources/js",
+    "registrations": ["index"]
+}

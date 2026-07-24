@@ -41,7 +41,6 @@ class InstallFrontendCommand extends Command
             $stubs.'/pages/learn.tsx.stub' => resource_path('js/pages/lms/learn.tsx'),
             $stubs.'/pages/dashboard.tsx.stub' => resource_path('js/pages/lms/dashboard.tsx'),
             $stubs.'/pages/instructor/dashboard.tsx.stub' => resource_path('js/pages/lms/instructor/dashboard.tsx'),
-            $stubs.'/pages/certificate-builder.tsx.stub' => resource_path('js/pages/lms/certificate-builder.tsx'),
         ];
     }
 

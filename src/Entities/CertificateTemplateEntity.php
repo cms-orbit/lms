@@ -7,6 +7,7 @@ namespace CmsOrbit\Lms\Entities;
 use CmsOrbit\Core\Foundation\Entity\Entity;
 use CmsOrbit\Core\Screen\Fields\CheckBox;
 use CmsOrbit\Core\Screen\Fields\Input;
+use CmsOrbit\Core\Screen\Fields\ReactField;
 use CmsOrbit\Core\Screen\Fields\Select;
 use CmsOrbit\Core\Screen\TD;
 use CmsOrbit\Lms\Concerns\HasLmsPermissions;
@@ -73,6 +74,12 @@ class CertificateTemplateEntity extends Entity
             Input::make('height')->title(__('Height (px)'))->type('number')->value(794),
             Input::make('background')->title(__('Background image URL')),
             CheckBox::make('is_default')->title(__('Default template'))->sendTrueOrFalse(),
+            ReactField::make('elements')
+                ->title(__('Certificate layout'))
+                ->component('lms-certificate-builder')
+                ->props([
+                    'placeholders' => ['student_name', 'course_title', 'instructor_name', 'issued_date', 'serial'],
+                ]),
         ];
     }
 
@@ -93,6 +100,7 @@ class CertificateTemplateEntity extends Entity
             'orientation' => ['required', 'in:landscape,portrait'],
             'width' => ['required', 'integer', 'min:200'],
             'height' => ['required', 'integer', 'min:200'],
+            'elements' => ['nullable', 'array'],
         ];
     }
 }

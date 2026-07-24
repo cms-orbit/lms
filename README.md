@@ -80,13 +80,18 @@ php artisan vendor:publish --tag=lms-config
 빨리감기 불가, 자동재생, 완료 후 진행)을 지원하며 스캐폴딩 플레이어가 네이티브
 비디오에서 이를 적용합니다.
 
-## 이수증 & GUI 빌더
+## 이수증 & GUI 빌더 (관리자)
 
-`CertificateTemplate`로 이수증 레이아웃을 정의하고(요소 JSON), 게시된 빌더
-페이지(`/certificate-builder`)에서 캔버스에 텍스트/플레이스홀더를 드래그해
-디자인합니다. `{{student_name}}`·`{{course_title}}`·`{{instructor_name}}`·
-`{{issued_date}}`·`{{serial}}` 치환을 지원합니다. `CertificateService::issue()`로
-완료 수강에 발급하고 `renderHtml()`로 인쇄/PDF용 HTML을 렌더합니다.
+이수증 빌더는 **Orbit 관리자 엔티티**입니다. Engagement → Certificate Templates에서
+템플릿을 만들고, 편집 화면의 커스텀 `ReactField`(`lms-certificate-builder`) 캔버스에서
+텍스트/플레이스홀더를 드래그 배치합니다. 이 컴포넌트는 패키지가 소유하며
+`frontend.json`의 `registrations`로 자동 등록됩니다(설치 후 `php artisan
+orbit:frontend-sync && npm run build`; `cms-orbit/core ^4.0.12` 필요).
+
+`{{student_name}}`·`{{course_title}}`·`{{instructor_name}}`·`{{issued_date}}`·
+`{{serial}}` 치환을 지원합니다. `CertificateService::issue()`로 완료 수강에
+발급하고 `renderHtml()`로 인쇄/PDF용 HTML을 렌더합니다. 학생은 스토어프론트의
+`/certificates/{id}`에서 자신의 이수증을 보고 인쇄합니다.
 
 ## 강사 대시보드
 
