@@ -1,0 +1,70 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers\Lms;
+
+use App\Http\Controllers\Controller;
+use CmsOrbit\Lms\Models\Certificate;
+use CmsOrbit\Lms\Models\CertificateTemplate;
+use CmsOrbit\Lms\Services\CertificateService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
+
+/**
+ * Certificate viewing + the GUI template builder. Published scaffolding — edit
+ * freely. Gate the builder routes to your instructor/admin roles as needed.
+ */
+class CertificateController extends Controller
+{
+    public function show(Request $request, Certificate $certificate, CertificateService $service): HttpResponse
+    {
+        abort_unless((int) $certificate->student_id === (int) $request->user()->getKey(), 403);
+
+        return response($service->renderHtml($certificate))->header('Content-Type', 'text/html');
+    }
+
+    public function builder(Request $request, ?CertificateTemplate $template = null): Response
+    {
+        $template ??= CertificateTemplate::default();
+
+        return Inertia::render('lms/certificate-builder', [
+            'templates' => CertificateTemplate::query()->orderBy('name')->get(['id', 'name']),
+            'template' => $template ? [
+                'id' => $template->id,
+                'name' => $template->name,
+                'width' => $template->width,
+                'height' => $template->height,
+                'background' => $template->background,
+                'elements' => $template->elements ?? [],
+            ] : null,
+            'placeholders' => ['student_name', 'course_title', 'instructor_name', 'issued_date', 'serial'],
+        ]);
+    }
+
+    public function save(Request $request, CertificateTemplate $template): RedirectResponse
+    {
+        $data = $request->validate([
+            'background' => ['nullable', 'string'],
+            'elements' => ['array'],
+            'elements.*.id' => ['required', 'string'],
+            'elements.*.text' => ['required', 'string'],
+            'elements.*.x' => ['required', 'numeric'],
+            'elements.*.y' => ['required', 'numeric'],
+            'elements.*.font_size' => ['required', 'integer', 'min:8', 'max:200'],
+            'elements.*.color' => ['required', 'string', 'max:9'],
+            'elements.*.align' => ['required', 'in:left,center,right'],
+            'elements.*.bold' => ['boolean'],
+        ]);
+
+        $template->update([
+            'elements' => $data['elements'] ?? [],
+            'background' => $data['background'] ?? $template->background,
+        ]);
+
+        return back()->with('message', __('Template saved.'));
+    }
+}

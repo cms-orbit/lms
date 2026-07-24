@@ -71,6 +71,28 @@ user 모델). 설정을 게시하려면:
 php artisan vendor:publish --tag=lms-config
 ```
 
+## 드립 콘텐츠 & 플레이어 옵션
+
+코스에서 드립을 켜고(`drip_enabled`) 방식(`drip_type`)을 고릅니다: 수강 후 N일,
+특정 날짜, 순차(이전 레슨 완료), 선수 레슨. 레슨별로 `drip_days`/`drip_date`/
+`drip_prerequisite_id`를 설정하며 `Lesson::isUnlockedFor($enrollment)`가 잠금을
+판정합니다(무료 미리보기는 항상 열림). 플레이어는 코스별 옵션(탐색 불가,
+빨리감기 불가, 자동재생, 완료 후 진행)을 지원하며 스캐폴딩 플레이어가 네이티브
+비디오에서 이를 적용합니다.
+
+## 이수증 & GUI 빌더
+
+`CertificateTemplate`로 이수증 레이아웃을 정의하고(요소 JSON), 게시된 빌더
+페이지(`/certificate-builder`)에서 캔버스에 텍스트/플레이스홀더를 드래그해
+디자인합니다. `{{student_name}}`·`{{course_title}}`·`{{instructor_name}}`·
+`{{issued_date}}`·`{{serial}}` 치환을 지원합니다. `CertificateService::issue()`로
+완료 수강에 발급하고 `renderHtml()`로 인쇄/PDF용 HTML을 렌더합니다.
+
+## 강사 대시보드
+
+`/instructor`(게시된 스캐폴딩)에서 강사별 코스·수강생·매출(총/정산가능/정산완료)·
+최근 리뷰·Q&A를 확인합니다(`InstructorDashboardService`).
+
 ## License
 
 MIT

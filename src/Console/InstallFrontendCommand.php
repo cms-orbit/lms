@@ -33,11 +33,15 @@ class InstallFrontendCommand extends Command
             $stubs.'/controllers/CheckoutController.php.stub' => app_path('Http/Controllers/Lms/CheckoutController.php'),
             $stubs.'/controllers/LearnController.php.stub' => app_path('Http/Controllers/Lms/LearnController.php'),
             $stubs.'/controllers/DashboardController.php.stub' => app_path('Http/Controllers/Lms/DashboardController.php'),
+            $stubs.'/controllers/InstructorController.php.stub' => app_path('Http/Controllers/Lms/InstructorController.php'),
+            $stubs.'/controllers/CertificateController.php.stub' => app_path('Http/Controllers/Lms/CertificateController.php'),
             $stubs.'/pages/courses/index.tsx.stub' => resource_path('js/pages/lms/courses/index.tsx'),
             $stubs.'/pages/courses/show.tsx.stub' => resource_path('js/pages/lms/courses/show.tsx'),
             $stubs.'/pages/checkout.tsx.stub' => resource_path('js/pages/lms/checkout.tsx'),
             $stubs.'/pages/learn.tsx.stub' => resource_path('js/pages/lms/learn.tsx'),
             $stubs.'/pages/dashboard.tsx.stub' => resource_path('js/pages/lms/dashboard.tsx'),
+            $stubs.'/pages/instructor/dashboard.tsx.stub' => resource_path('js/pages/lms/instructor/dashboard.tsx'),
+            $stubs.'/pages/certificate-builder.tsx.stub' => resource_path('js/pages/lms/certificate-builder.tsx'),
         ];
     }
 

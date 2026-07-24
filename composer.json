@@ -1,6 +1,6 @@
 {
     "name": "cms-orbit/lms",
-    "version": "4.1.0",
+    "version": "4.2.0",
     "description": "CMS Orbit LMS: TutorLMS-style learning management (courses, sections, lessons, quizzes, enrollments) for the Orbit admin engine.",
     "keywords": [
         "laravel",

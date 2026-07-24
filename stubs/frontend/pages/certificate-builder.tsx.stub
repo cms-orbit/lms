@@ -1,0 +1,257 @@
+import { Head, router } from '@inertiajs/react';
+import { useRef, useState } from 'react';
+
+interface Element {
+    id: string;
+    text: string;
+    x: number;
+    y: number;
+    font_size: number;
+    color: string;
+    align: 'left' | 'center' | 'right';
+    bold: boolean;
+}
+
+interface Template {
+    id: number;
+    name: string;
+    width: number;
+    height: number;
+    background: string | null;
+    elements: Element[];
+}
+
+interface Props {
+    templates: { id: number; name: string }[];
+    template: Template | null;
+    placeholders: string[];
+}
+
+const CANVAS_WIDTH = 900;
+
+export default function CertificateBuilder({ templates, template, placeholders }: Props) {
+    const [elements, setElements] = useState<Element[]>(template?.elements ?? []);
+    const [background, setBackground] = useState<string>(template?.background ?? '');
+    const [selectedId, setSelectedId] = useState<string | null>(null);
+    const canvasRef = useRef<HTMLDivElement>(null);
+    const drag = useRef<{ id: string; dx: number; dy: number } | null>(null);
+
+    if (!template) {
+        return (
+            <div className="mx-auto max-w-3xl px-4 py-12 text-center text-gray-500">
+                <Head title="Certificate builder" />
+                No certificate templates yet. Create one in the Orbit admin (Engagement → Certificate Templates).
+            </div>
+        );
+    }
+
+    const scale = CANVAS_WIDTH / template.width;
+    const selected = elements.find((element) => element.id === selectedId) ?? null;
+
+    const update = (id: string, patch: Partial<Element>) => {
+        setElements((current) => current.map((element) => (element.id === id ? { ...element, ...patch } : element)));
+    };
+
+    const onPointerDown = (event: React.PointerEvent, element: Element) => {
+        event.preventDefault();
+        setSelectedId(element.id);
+        drag.current = {
+            id: element.id,
+            dx: event.clientX - element.x * scale,
+            dy: event.clientY - element.y * scale,
+        };
+    };
+
+    const onPointerMove = (event: React.PointerEvent) => {
+        if (!drag.current) {
+            return;
+        }
+        const x = Math.round((event.clientX - drag.current.dx) / scale);
+        const y = Math.round((event.clientY - drag.current.dy) / scale);
+        update(drag.current.id, {
+            x: Math.max(0, Math.min(template.width, x)),
+            y: Math.max(0, Math.min(template.height, y)),
+        });
+    };
+
+    const addElement = () => {
+        const id = `el-${Date.now()}`;
+        setElements((current) => [
+            ...current,
+            { id, text: 'New text', x: Math.round(template.width / 2), y: Math.round(template.height / 2), font_size: 24, color: '#111827', align: 'center', bold: false },
+        ]);
+        setSelectedId(id);
+    };
+
+    const removeSelected = () => {
+        if (selectedId) {
+            setElements((current) => current.filter((element) => element.id !== selectedId));
+            setSelectedId(null);
+        }
+    };
+
+    const insertPlaceholder = (placeholder: string) => {
+        if (selected) {
+            update(selected.id, { text: `${selected.text} {{${placeholder}}}`.trim() });
+        }
+    };
+
+    const save = () => {
+        router.put(`/certificate-builder/${template.id}`, { elements, background }, { preserveScroll: true });
+    };
+
+    return (
+        <div className="mx-auto max-w-6xl px-4 py-8">
+            <Head title={`Builder · ${template.name}`} />
+
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+                <h1 className="text-2xl font-bold text-gray-900">Certificate builder</h1>
+                <div className="flex items-center gap-2">
+                    <select
+                        value={template.id}
+                        onChange={(event) => router.get(`/certificate-builder/${event.target.value}`)}
+                        className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm"
+                    >
+                        {templates.map((item) => (
+                            <option key={item.id} value={item.id}>
+                                {item.name}
+                            </option>
+                        ))}
+                    </select>
+                    <button onClick={save} className="rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700">
+                        Save template
+                    </button>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
+                <div className="lg:col-span-3">
+                    <div
+                        ref={canvasRef}
+                        onPointerMove={onPointerMove}
+                        onPointerUp={() => (drag.current = null)}
+                        onPointerLeave={() => (drag.current = null)}
+                        className="relative mx-auto overflow-hidden rounded-lg border border-gray-300 bg-white shadow-inner"
+                        style={{
+                            width: CANVAS_WIDTH,
+                            height: template.height * scale,
+                            backgroundImage: background ? `url(${background})` : undefined,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                        }}
+                    >
+                        {elements.map((element) => (
+                            <div
+                                key={element.id}
+                                onPointerDown={(event) => onPointerDown(event, element)}
+                                className={`absolute cursor-move whitespace-nowrap select-none ${element.id === selectedId ? 'outline outline-2 outline-indigo-400' : ''}`}
+                                style={{
+                                    left: element.x * scale,
+                                    top: element.y * scale,
+                                    transform:
+                                        element.align === 'center'
+                                            ? 'translate(-50%, -50%)'
+                                            : element.align === 'right'
+                                              ? 'translate(-100%, -50%)'
+                                              : 'translate(0, -50%)',
+                                    fontSize: element.font_size * scale,
+                                    color: element.color,
+                                    fontWeight: element.bold ? 700 : 400,
+                                }}
+                            >
+                                {element.text}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="flex gap-2">
+                        <button onClick={addElement} className="flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50">
+                            + Add text
+                        </button>
+                        <button
+                            onClick={removeSelected}
+                            disabled={!selected}
+                            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 disabled:opacity-40"
+                        >
+                            Delete
+                        </button>
+                    </div>
+
+                    <div>
+                        <label className="mb-1 block text-xs font-medium text-gray-500">Background image URL</label>
+                        <input
+                            value={background}
+                            onChange={(event) => setBackground(event.target.value)}
+                            className="w-full rounded-lg border border-gray-300 px-2 py-1 text-sm"
+                            placeholder="https://…"
+                        />
+                    </div>
+
+                    {selected ? (
+                        <div className="space-y-3 rounded-lg border border-gray-200 p-3">
+                            <div>
+                                <label className="mb-1 block text-xs font-medium text-gray-500">Text</label>
+                                <textarea
+                                    value={selected.text}
+                                    onChange={(event) => update(selected.id, { text: event.target.value })}
+                                    rows={2}
+                                    className="w-full rounded-lg border border-gray-300 px-2 py-1 text-sm"
+                                />
+                            </div>
+                            <div className="flex flex-wrap gap-1">
+                                {placeholders.map((placeholder) => (
+                                    <button
+                                        key={placeholder}
+                                        onClick={() => insertPlaceholder(placeholder)}
+                                        className="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-600 hover:bg-gray-200"
+                                    >
+                                        {`{{${placeholder}}}`}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                                <label className="text-xs text-gray-500">
+                                    Font size
+                                    <input
+                                        type="number"
+                                        value={selected.font_size}
+                                        onChange={(event) => update(selected.id, { font_size: Number(event.target.value) })}
+                                        className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
+                                    />
+                                </label>
+                                <label className="text-xs text-gray-500">
+                                    Color
+                                    <input
+                                        type="color"
+                                        value={selected.color}
+                                        onChange={(event) => update(selected.id, { color: event.target.value })}
+                                        className="mt-1 h-8 w-full rounded border border-gray-300"
+                                    />
+                                </label>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <select
+                                    value={selected.align}
+                                    onChange={(event) => update(selected.id, { align: event.target.value as Element['align'] })}
+                                    className="rounded border border-gray-300 px-2 py-1 text-sm"
+                                >
+                                    <option value="left">Left</option>
+                                    <option value="center">Center</option>
+                                    <option value="right">Right</option>
+                                </select>
+                                <label className="flex items-center gap-1 text-sm text-gray-600">
+                                    <input type="checkbox" checked={selected.bold} onChange={(event) => update(selected.id, { bold: event.target.checked })} />
+                                    Bold
+                                </label>
+                            </div>
+                        </div>
+                    ) : (
+                        <p className="text-sm text-gray-400">Select an element to edit, or add a new text box.</p>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}

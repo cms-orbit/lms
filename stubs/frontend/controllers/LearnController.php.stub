@@ -15,7 +15,8 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Lesson player + progress tracking. Published scaffolding — edit freely.
+ * Lesson player + progress tracking, with drip-content locking and player
+ * restrictions (disable seek / fast-forward). Published scaffolding.
  */
 class LearnController extends Controller
 {
@@ -26,23 +27,38 @@ class LearnController extends Controller
         $enrollment = $this->enrollment($request, $course);
         abort_unless($enrollment !== null || $lesson->is_preview, 403);
 
+        // Drip: block a locked lesson unless it is a free preview.
+        if ($enrollment !== null) {
+            $lesson->setRelation('course', $course);
+            abort_if(! $lesson->isUnlockedFor($enrollment), 403, 'This lesson is not available yet.');
+        }
+
         $course->load(['sections.lessons']);
 
         $completed = $enrollment
-            ? $enrollment->lessonProgress()->where('completed', true)->pluck('lesson_id')->all()
+            ? $enrollment->lessonProgress()->where('completed', true)->pluck('lesson_id')->map(fn ($id) => (int) $id)->all()
             : [];
+
+        $sections = $course->sections->map(function ($section) use ($enrollment, $course) {
+            return [
+                'title' => $section->title,
+                'lessons' => $section->lessons->map(function ($item) use ($enrollment, $course) {
+                    $item->setRelation('course', $course);
+
+                    return [
+                        'id' => $item->id,
+                        'title' => $item->title,
+                        'locked' => $enrollment !== null && ! $item->isUnlockedFor($enrollment),
+                    ];
+                }),
+            ];
+        });
 
         return Inertia::render('lms/learn', [
             'course' => [
                 'slug' => $course->slug,
                 'title' => $course->title,
-                'sections' => $course->sections->map(fn ($section) => [
-                    'title' => $section->title,
-                    'lessons' => $section->lessons->map(fn ($item) => [
-                        'id' => $item->id,
-                        'title' => $item->title,
-                    ]),
-                ]),
+                'sections' => $sections,
             ],
             'lesson' => [
                 'id' => $lesson->id,
@@ -50,7 +66,9 @@ class LearnController extends Controller
                 'type' => $lesson->type?->value,
                 'content' => $lesson->content,
                 'video_url' => $lesson->video_url,
+                'video_provider' => $lesson->video_provider,
             ],
+            'player' => $course->playerSettings(),
             'completedLessonIds' => $completed,
             'progress' => $enrollment?->progress ?? 0,
         ]);

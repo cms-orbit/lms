@@ -6,6 +6,7 @@ namespace CmsOrbit\Lms\Entities;
 
 use CmsOrbit\Core\Foundation\Entity\Entity;
 use CmsOrbit\Core\Screen\Fields\CheckBox;
+use CmsOrbit\Core\Screen\Fields\DateTimer;
 use CmsOrbit\Core\Screen\Fields\Input;
 use CmsOrbit\Core\Screen\Fields\RichText;
 use CmsOrbit\Core\Screen\Fields\Select;
@@ -89,6 +90,14 @@ class LessonEntity extends Entity
             Input::make('duration_seconds')->title(__('Duration (seconds)'))->type('number'),
             Input::make('order')->title(__('Order'))->type('number')->value(0),
             CheckBox::make('is_preview')->title(__('Free preview'))->sendTrueOrFalse(),
+            Input::make('drip_days')->title(__('Drip: days after enrollment'))->type('number')
+                ->help(__('Used when the course drip schedule is "X days after enrollment".')),
+            DateTimer::make('drip_date')->title(__('Drip: release date'))->enableTime()->format('Y-m-d H:i:S')
+                ->help(__('Used when the course drip schedule is "On a specific date".')),
+            Select::make('drip_prerequisite_id')->title(__('Drip: prerequisite lesson'))
+                ->fromModel(Lesson::class, 'title', 'id')
+                ->empty(__('None'))
+                ->help(__('Used when the course drip schedule is "After a prerequisite lesson".')),
         ];
     }
 

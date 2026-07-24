@@ -15,6 +15,7 @@ use CmsOrbit\Core\Screen\TD;
 use CmsOrbit\Lms\Concerns\HasLmsPermissions;
 use CmsOrbit\Lms\Enums\CourseLevel;
 use CmsOrbit\Lms\Enums\CourseStatus;
+use CmsOrbit\Lms\Enums\DripType;
 use CmsOrbit\Lms\Models\Course;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -93,6 +94,14 @@ class CourseEntity extends Entity
             Input::make('currency')->title(__('Currency'))->value('USD'),
             Input::make('commission_rate')->title(__('Instructor commission (%)'))->type('number')
                 ->help(__('Leave blank to use the marketplace default.')),
+            CheckBox::make('drip_enabled')->title(__('Enable drip content'))->sendTrueOrFalse(),
+            Select::make('drip_type')->title(__('Drip schedule'))
+                ->options(DripType::options())
+                ->value(DripType::Off->value),
+            CheckBox::make('player_disable_seek')->title(__('Player: disable seeking'))->sendTrueOrFalse(),
+            CheckBox::make('player_disable_fastforward')->title(__('Player: disable fast-forward'))->sendTrueOrFalse(),
+            CheckBox::make('player_autoplay')->title(__('Player: autoplay'))->sendTrueOrFalse(),
+            CheckBox::make('player_require_completion')->title(__('Player: require completion to advance'))->sendTrueOrFalse(),
             Input::make('category')->title(__('Category')),
             Input::make('duration_minutes')->title(__('Duration (minutes)'))->type('number'),
             Input::make('max_students')->title(__('Max students'))->type('number')
@@ -133,6 +142,7 @@ class CourseEntity extends Entity
             ],
             'level' => ['required', Rule::enum(CourseLevel::class)],
             'status' => ['required', Rule::enum(CourseStatus::class)],
+            'drip_type' => ['nullable', Rule::enum(DripType::class)],
             'instructor_id' => ['nullable', 'integer'],
             'duration_minutes' => ['nullable', 'integer', 'min:0'],
             'max_students' => ['nullable', 'integer', 'min:1'],

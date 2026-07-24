@@ -13,6 +13,7 @@ use CmsOrbit\Core\Support\Locale;
 use CmsOrbit\Lms\Console\InstallFrontendCommand;
 use CmsOrbit\Lms\Entities\AssignmentEntity;
 use CmsOrbit\Lms\Entities\CertificateEntity;
+use CmsOrbit\Lms\Entities\CertificateTemplateEntity;
 use CmsOrbit\Lms\Entities\CouponEntity;
 use CmsOrbit\Lms\Entities\CourseEntity;
 use CmsOrbit\Lms\Entities\CourseQuestionEntity;
@@ -53,6 +54,7 @@ class LmsServiceProvider extends OrbitServiceProvider
         CourseQuestionEntity::class,
         AssignmentEntity::class,
         CertificateEntity::class,
+        CertificateTemplateEntity::class,
     ];
 
     public function register(): void

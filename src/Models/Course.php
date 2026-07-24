@@ -7,6 +7,7 @@ namespace CmsOrbit\Lms\Models;
 use CmsOrbit\Lms\Database\Factories\CourseFactory;
 use CmsOrbit\Lms\Enums\CourseLevel;
 use CmsOrbit\Lms\Enums\CourseStatus;
+use CmsOrbit\Lms\Enums\DripType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -38,6 +39,12 @@ class Course extends Model
         'sale_price',
         'currency',
         'commission_rate',
+        'drip_enabled',
+        'drip_type',
+        'player_disable_seek',
+        'player_disable_fastforward',
+        'player_autoplay',
+        'player_require_completion',
         'category',
         'duration_minutes',
         'max_students',
@@ -55,9 +62,30 @@ class Course extends Model
             'price' => 'decimal:2',
             'sale_price' => 'decimal:2',
             'commission_rate' => 'integer',
+            'drip_enabled' => 'boolean',
+            'drip_type' => DripType::class,
+            'player_disable_seek' => 'boolean',
+            'player_disable_fastforward' => 'boolean',
+            'player_autoplay' => 'boolean',
+            'player_require_completion' => 'boolean',
             'duration_minutes' => 'integer',
             'max_students' => 'integer',
             'published_at' => 'datetime',
+        ];
+    }
+
+    /**
+     * Video player behaviour, consumed by the storefront lesson player.
+     *
+     * @return array{disable_seek: bool, disable_fastforward: bool, autoplay: bool, require_completion: bool}
+     */
+    public function playerSettings(): array
+    {
+        return [
+            'disable_seek' => (bool) $this->player_disable_seek,
+            'disable_fastforward' => (bool) $this->player_disable_fastforward,
+            'autoplay' => (bool) $this->player_autoplay,
+            'require_completion' => (bool) $this->player_require_completion,
         ];
     }
 

@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Lms\CatalogController;
+use App\Http\Controllers\Lms\CertificateController;
 use App\Http\Controllers\Lms\CheckoutController;
 use App\Http\Controllers\Lms\DashboardController;
+use App\Http\Controllers\Lms\InstructorController;
 use App\Http\Controllers\Lms\LearnController;
 use Illuminate\Support\Facades\Route;
 
@@ -23,4 +25,12 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/learn/lesson/{lesson}/complete', [LearnController::class, 'complete'])->name('lms.learn.complete');
 
     Route::get('/my-courses', [DashboardController::class, 'index'])->name('lms.dashboard');
+
+    // Instructor
+    Route::get('/instructor', [InstructorController::class, 'index'])->name('lms.instructor.dashboard');
+
+    // Certificates + template builder
+    Route::get('/certificates/{certificate}', [CertificateController::class, 'show'])->name('lms.certificate.show');
+    Route::get('/certificate-builder/{template?}', [CertificateController::class, 'builder'])->name('lms.certificate.builder');
+    Route::put('/certificate-builder/{template}', [CertificateController::class, 'save'])->name('lms.certificate.builder.save');
 });

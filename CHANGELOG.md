@@ -2,6 +2,29 @@
 
 이 문서는 `cms-orbit/lms`의 릴리스 노트를 기록합니다.
 
+## 4.2.0 - 2026-07-24
+
+### 추가 (드립 콘텐츠 + 플레이어 옵션)
+
+- 코스 드립 콘텐츠: `drip_enabled` + `drip_type`(`off`/`after_days`/`by_date`/`sequential`/`prerequisite`), 레슨별 `drip_days`·`drip_date`·`drip_prerequisite_id`.
+- `Lesson::isUnlockedFor(Enrollment)` / `unlockDateFor()` — 드립 규칙에 따른 레슨 잠금 판정(무료 미리보기는 항상 열림).
+- 코스 플레이어 옵션: `player_disable_seek`, `player_disable_fastforward`, `player_autoplay`, `player_require_completion` + `Course::playerSettings()`.
+
+### 추가 (이수증 템플릿 + 빌더)
+
+- `CertificateTemplate`(이름·방향·크기·배경·요소 JSON·기본값) + `CertificateTemplateEntity` 관리자 CRUD.
+- `CertificateService` — 완료 수강에 이수증 발급(멱등), `{{student_name}}`·`{{course_title}}`·`{{instructor_name}}`·`{{issued_date}}`·`{{serial}}` 치환으로 HTML 렌더(인쇄/PDF용).
+- 발급 이수증을 템플릿과 연결(`certificate_template_id`).
+
+### 추가 (강사 대시보드 집계)
+
+- `InstructorDashboardService` — 강사별 코스/수강생/수강수/매출(총·정산가능·정산완료)·최근 리뷰·최근 Q&A 집계.
+
+### 추가 (공개 프론트엔드 스캐폴딩 확장, `lms:install-frontend`)
+
+- **강사 대시보드**(`/instructor`), **이수증 GUI 빌더**(`/certificate-builder` — 캔버스에서 텍스트/플레이스홀더를 드래그 배치·저장), **이수증 보기/인쇄**(`/certificates/{id}`).
+- **강의 플레이어 고도화**: 드립 잠금 표시, 옵션에 따른 **빨리감기/탐색 불가**(네이티브 비디오 기준) 적용.
+
 ## 4.1.0 - 2026-07-24
 
 ### 추가 (Phase 2 — 오픈마켓형 수익화)
