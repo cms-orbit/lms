@@ -84,9 +84,9 @@ class LmsServiceProvider extends OrbitServiceProvider
 
     public function boot(): void
     {
-        Orbit::registerSection('lms', 'bs.mortarboard', __('Learning'), 5300);
-        Orbit::registerSection('lms-marketplace', 'bs.shop', __('Marketplace'), 5400);
-        Orbit::registerSection('lms-engagement', 'bs.chat-square-heart', __('Engagement'), 5500);
+        Orbit::registerSection('lms', 'bs.mortarboard', fn () => __('Learning'), 5300);
+        Orbit::registerSection('lms-marketplace', 'bs.shop', fn () => __('Marketplace'), 5400);
+        Orbit::registerSection('lms-engagement', 'bs.chat-square-heart', fn () => __('Engagement'), 5500);
 
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
