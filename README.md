@@ -98,6 +98,14 @@ orbit:frontend-sync && npm run build`; `cms-orbit/core ^4.0.12` 필요).
 `/instructor`(게시된 스캐폴딩)에서 강사별 코스·수강생·매출(총/정산가능/정산완료)·
 최근 리뷰·Q&A를 확인합니다(`InstructorDashboardService`).
 
+## 업데이트 노트
+
+### 4.3.1
+
+- **php 제약 `^8.3` 복구**: 게시된 태그는 모두 `^8.3` 이었으나 main 에서 `^8.2` 로 내려가 있었습니다. Laravel 13 은 php `^8.3` 을 요구하므로 `php ^8.2` + `laravel/framework ^13` 조합은 php 8.2 환경에서 조용히 Laravel 11 을 설치합니다.
+- **`laravel/pint` `^1.14` → `^1.30`** (1.30 이 php `^8.3` 을 요구).
+- **릴리스 파이프라인 도입**: `.githooks/pre-push` 가 composer.json 의 `version` 필드와 태그명이 어긋난 태그의 푸시를 차단합니다. `cms-orbit/core` 의 `4.0.8` 태그가 `version: 4.0.7` 로 만들어져 Packagist 가 아무 오류 없이 그 태그를 무시했고, 4.0.8 이 게시되지 않은 사실을 아무도 알지 못한 사고가 있었습니다. `bin/release <버전>` 이 version 갱신·검증·커밋·태그·푸시를 한 동작으로 묶어 이 드리프트를 원천 차단하고, `cms-orbit/*` 의존이 실제로 Packagist 에 게시되어 있는지 Composer 리졸버로 확인합니다. 저장소를 클론해 `composer install` 하면 `core.hooksPath` 가 자동 설정됩니다.
+
 ## License
 
 MIT
