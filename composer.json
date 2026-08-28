@@ -13,12 +13,12 @@
     "type": "library",
     "license": "MIT",
     "require": {
-        "php": "^8.2",
+        "php": "^8.3",
         "cms-orbit/core": "^4.1",
         "laravel/framework": "^11.0 || ^12.0 || ^13.0"
     },
     "require-dev": {
-        "laravel/pint": "^1.14"
+        "laravel/pint": "^1.30"
     },
     "autoload": {
         "psr-4": {
@@ -38,5 +38,10 @@
         "lock": false
     },
     "minimum-stability": "dev",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "scripts": {
+        "post-install-cmd": [
+            "git config core.hooksPath .githooks || true"
+        ]
+    }
 }
