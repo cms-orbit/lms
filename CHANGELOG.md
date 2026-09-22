@@ -2,6 +2,13 @@
 
 이 문서는 `cms-orbit/lms`의 릴리스 노트를 기록합니다.
 
+## 4.6.1 - 2026-09-22
+
+### 수정
+
+- 이수증 빌더를 `registerFields`로 등록해 `FieldComponentProps` 계약과 레지스트리 타입을 일치시켰습니다. 호스트에서 LMS 프런트엔드를 포함해 TypeScript 검사 시 발생하던 오류를 수정했습니다.
+- README의 core 요구 버전을 Composer 선언과 일치시켰습니다.
+
 ## 4.6.0 - 2026-09-08
 
 ### 변경

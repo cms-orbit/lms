@@ -3,10 +3,10 @@
  * `orbit:frontend-sync` generates, so these custom components resolve inside the
  * Orbit admin screen renderer without any host file edits.
  */
-import { registerComponents } from '@cms-orbit/core';
+import { registerFields } from '@cms-orbit/core';
 import CertificateBuilderField from './fields/certificate-builder';
 
-registerComponents({
+registerFields({
     'lms-certificate-builder': CertificateBuilderField,
 });
 
