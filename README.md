@@ -41,7 +41,7 @@ npm run build                            # 또는 npm run dev
 
 - PHP `^8.4`
 - Laravel `^13.0`
-- `cms-orbit/core` `^4.5`
+- `cms-orbit/core` `^4.6`
 
 ## 설치
 
